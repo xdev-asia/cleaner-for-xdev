@@ -30,6 +30,13 @@ A native macOS app that shows where your disk space goes and cleans it up safely
 
 Requires macOS 26 or later.
 
+### Mac App Store edition
+
+A sandboxed edition (target `CleanerAppStore`) scans only folders you choose, moves items to the Trash and never
+runs other tools. `./scripts/appstore.sh` builds and signs its installer package; see the script for what it needs.
+[Support](https://xdev-asia.github.io/cleaner-for-xdev/) ·
+[Privacy policy](https://xdev-asia.github.io/cleaner-for-xdev/privacy/)
+
 ## Build from source
 
 Requirements: Xcode 27 or later, [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
