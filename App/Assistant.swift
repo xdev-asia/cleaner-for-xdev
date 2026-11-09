@@ -30,7 +30,7 @@ final class Assistant {
         }
     }
 
-    func ask(_ title: String, subtitle: String = "", prompt: String) {
+    func ask(_ title: String, subtitle: String = "", prompt: String, instructions: String = AIBrief.instructions) {
         task?.cancel()
         request = Request(title: title, subtitle: subtitle, prompt: prompt)
         text = ""
@@ -41,7 +41,7 @@ final class Assistant {
             defer { working = false }
             do {
                 // A new session per request, so one answer cannot leak into the next.
-                let session = LanguageModelSession(instructions: AIBrief.instructions)
+                let session = LanguageModelSession(instructions: instructions)
                 for try await snapshot in session.streamResponse(to: prompt, options: GenerationOptions(temperature: 0.2)) {
                     text = snapshot.content
                 }

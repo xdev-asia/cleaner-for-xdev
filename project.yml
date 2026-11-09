@@ -19,6 +19,7 @@ settingGroups:
     INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 xDev. MIT License."
     ENABLE_HARDENED_RUNTIME: YES
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    SWIFT_OBJC_BRIDGING_HEADER: App/Cleaner-Bridging-Header.h
 targets:
   Cleaner:
     type: application

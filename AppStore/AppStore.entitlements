@@ -8,5 +8,10 @@
 	<true/>
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
+	<key>com.apple.security.temporary-exception.iokit-user-client-class</key>
+	<array>
+		<string>AppleNVMeSMARTUserClient</string>
+		<string>IONVMeSMARTUserClient</string>
+	</array>
 </dict>
 </plist>

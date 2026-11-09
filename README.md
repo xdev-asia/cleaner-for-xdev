@@ -12,6 +12,9 @@ A native macOS app that shows where your disk space goes and cleans it up safely
   selected by default.
 - **Large Files:** filter by size, kind and age.
 - **Duplicates:** same size, then the same first 64 KB, then the same SHA-256.
+- **Disk Health:** reads each NVMe drive's SMART log (life used, spare capacity, temperature, data written,
+  power-on hours, media errors) and rates it *Good*, *Watch* or *Replace* with fixed thresholds. Other drives show
+  their SMART status from `diskutil` (DMG edition). Apple Intelligence explains the rating; it never sets it.
 
 ## Safety
 

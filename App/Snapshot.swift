@@ -73,6 +73,14 @@ enum Snapshot {
             if let root = model.root {
                 for file in LargeFiles.list(in: root, minimumSize: 10_000_000) { report += "large \(file.path.tilde) \(file.size)\n" }
             }
+            for disk in model.disks {
+                let a = DiskHealth.assess(disk)
+                report += "disk \(disk.bsdName) \(disk.model) \(disk.interconnect) \(a.level.rawValue) \(a.reasons) smart=\(disk.smartStatus.rawValue) used=\(disk.nvme?.percentageUsed ?? -1)% written=\(disk.nvme?.bytesWritten ?? -1) hours=\(disk.nvme?.powerOnHours ?? 0)\n"
+            }
+            if CommandLine.arguments.contains("--ai") {
+                while model.healthAdvisor.working { try? await Task.sleep(for: .milliseconds(200)) }
+                report += "health ai: \(model.healthAdvisor.error ?? model.healthAdvisor.text)\n"
+            }
             for group in model.duplicates { report += "dup \(group.files.map(\.name)) wasted \(group.wasted)\n" }
             if CommandLine.arguments.contains("--clean-selected") {
                 model.confirmFindings()

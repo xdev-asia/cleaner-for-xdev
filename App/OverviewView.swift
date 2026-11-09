@@ -37,6 +37,20 @@ struct OverviewView: View {
                 .padding(12)
                 .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
             }
+            if let level = model.worstHealth {
+                Button {
+                    model.section = .health
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "heart.text.square")
+                        Text("Disk health:")
+                        HealthBadge(level: level)
+                        Image(systemName: "chevron.right").font(.caption)
+                    }
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
         }
     }
 

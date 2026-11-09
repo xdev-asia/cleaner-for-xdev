@@ -140,3 +140,25 @@ App không thu thập dữ liệu và không kết nối mạng.
 - Sau khi dọn, app hiện số dung lượng đã giải phóng và nút "Scan Again".
 - AI không tự chạy; nút "Summarise This Scan" vẫn giữ.
 - Phần tính toán (nhóm, tổng, lựa chọn mặc định, tổng đã dọn) nằm trong `SmartScanSummary` của CleanerKit và có test.
+
+### Disk Health (sức khoẻ ổ cứng)
+- Mục **Disk Health** riêng ở thanh bên, mỗi ổ vật lý một thẻ. Overview có một dòng trạng thái ngắn.
+- Nguồn dữ liệu:
+  - Ổ NVMe (SSD trong Mac, ổ NVMe gắn ngoài): đọc log SMART 512 byte qua `NVMeSMARTLib` của IOKit. Log gồm mức mòn,
+    spare, nhiệt độ, dung lượng đã đọc/ghi, giờ chạy, số lần bật, số lần tắt đột ngột, lỗi media, cảnh báo nghiêm trọng.
+  - Ổ khác (SATA, USB): bản DMG lấy trạng thái SMART (Verified / Failing / Not Supported) từ `diskutil info -plist`.
+    Bản Store không chạy được diskutil, nên hiện "không đọc được".
+  - Mọi ổ: số lỗi đọc/ghi từ lần khởi động gần nhất (thuộc tính `Statistics` trong IORegistry).
+- Bản Store xin entitlement `com.apple.security.temporary-exception.iokit-user-client-class` cho
+  `AppleNVMeSMARTUserClient` (SSD trong Mac) và `IONVMeSMARTUserClient` (ổ NVMe khác).
+  - Đã thử 2026-11-09: không có entitlement thì sandbox chặn (IOKit trả `0xe00002be`); có entitlement thì đọc được.
+  - [Inference] Apple có thể hỏi lại hoặc từ chối exception này khi duyệt; ghi lý do trong ghi chú gửi reviewer.
+- Mức đánh giá do ngưỡng của app quyết định (`DiskHealth.assess`, có test), không do AI:
+  - **Replace**: SMART Failing; cảnh báo nghiêm trọng về spare, độ tin cậy, chế độ chỉ đọc hoặc bộ nhớ dự phòng;
+    spare dưới ngưỡng; mức mòn từ 100%.
+  - **Watch**: mức mòn từ 80%; có lỗi media; nhiệt độ từ 70 °C hoặc cảnh báo nhiệt; spare cách ngưỡng không quá 10;
+    có lỗi đọc/ghi từ lần khởi động.
+  - **Good**: không có điều nào ở trên.
+  - **Unknown**: không đọc được dữ liệu.
+- AI (Apple Intelligence, chạy trên máy) tự viết đánh giá khi mở mục Disk Health; có nút "Assess Again".
+  Prompt chỉ có các con số và mức đánh giá của app. AI chép lại mức đánh giá, không tự đánh giá.

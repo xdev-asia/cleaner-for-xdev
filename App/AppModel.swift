@@ -3,13 +3,14 @@ import CleanerKit
 import SwiftUI
 
 enum SidebarSection: String, CaseIterable, Identifiable {
-    case smartScan, overview, folders, cleanable, large, duplicates
+    case smartScan, overview, health, folders, cleanable, large, duplicates
     var id: Self { self }
 
     var title: String {
         switch self {
         case .smartScan: "Smart Scan"
         case .overview: "Overview"
+        case .health: "Disk Health"
         case .folders: "Folders"
         case .cleanable: "Cleanable"
         case .large: "Large Files"
@@ -21,6 +22,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .smartScan: "wand.and.sparkles"
         case .overview: "internaldrive"
+        case .health: "heart.text.square"
         case .folders: "square.grid.3x3.square"
         case .cleanable: "sparkles"
         case .large: "doc.badge.ellipsis"
@@ -108,6 +110,12 @@ final class AppModel {
     // Apple Intelligence
     let explainer = Assistant()
     let summariser = Assistant()
+    let healthAdvisor = Assistant()
+
+    // Disk health
+    var disks: [DiskInfo] = []
+    var readingHealth = false
+    var healthRead = false
 
     // Cleanup
     var pending: PendingCleanup?
@@ -125,6 +133,7 @@ final class AppModel {
 
     init() {
         refreshVolumes()
+        Task { await loadHealth() }
         // `--scan <path> [--section cleanable]` starts a scan at launch (used for testing and screenshots).
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--scan"), i + 1 < args.count { scan(args[i + 1]) }
@@ -167,6 +176,23 @@ final class AppModel {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    // MARK: Disk health
+
+    func loadHealth() async {
+        guard !readingHealth else { return }
+        readingHealth = true
+        disks = await DiskHealthReader.read()
+        readingHealth = false
+        healthRead = true
+    }
+
+    /// The most serious rating among the disks, for the Overview.
+    var worstHealth: HealthLevel? { disks.map { DiskHealth.assess($0).level }.max() }
+
+    func assessHealth() {
+        healthAdvisor.ask("Disk Health", prompt: AIBrief.diskHealth(disks), instructions: AIBrief.healthInstructions)
     }
 
     // MARK: Scan

@@ -47,6 +47,7 @@ struct ContentView: View {
         switch model.section {
         case .smartScan: SmartScanView()
         case .overview: OverviewView()
+        case .health: DiskHealthView()
         case .folders: NeedsScan { FoldersView() }
         case .cleanable: NeedsScan { CleanableView() }
         case .large: NeedsScan { LargeFilesView() }
