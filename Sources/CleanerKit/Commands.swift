@@ -49,7 +49,7 @@ public struct ToolLocator: Sendable {
         self.fileExists = fileExists
     }
 
-    public static func standard(home: String = NSHomeDirectory()) -> ToolLocator {
+    public static func standard(home: String = UserHome.path) -> ToolLocator {
         var paths = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin",
                      home + "/.rd/bin", "/Applications/Docker.app/Contents/Resources/bin",
                      home + "/.orbstack/bin", home + "/.cargo/bin", home + "/Library/pnpm",

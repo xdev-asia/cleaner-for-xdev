@@ -7,7 +7,7 @@ public struct RuleMatcher: Sendable {
     public let runner: CommandRunning
     public let tools: ToolLocator
 
-    public init(rules: [Rule] = Rules.standard, home: String = NSHomeDirectory(),
+    public init(rules: [Rule] = Rules.standard, home: String = UserHome.path,
                 runner: CommandRunning = ProcessRunner(), tools: ToolLocator = .standard()) {
         self.rules = rules
         self.home = home

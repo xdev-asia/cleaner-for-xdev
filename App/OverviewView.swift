@@ -41,6 +41,21 @@ struct OverviewView: View {
     }
 
     private var scanButtons: some View {
+        #if APP_STORE
+        VStack(alignment: .leading, spacing: 10) {
+            Button {
+                model.chooseFolderAndScan()
+            } label: {
+                Label("Choose Folder to Scan…", systemImage: "folder")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(model.scanning)
+            Text("Cleaner for xDev scans the folders you choose, such as your Home folder or a projects folder, and moves what you confirm to the Trash.")
+                .foregroundStyle(.secondary)
+            Link("Open source on GitHub", destination: URL(string: "https://github.com/xdev-asia/cleaner-for-xdev")!)
+        }
+        #else
         HStack(spacing: 12) {
             Button {
                 model.scan("/")
@@ -49,7 +64,7 @@ struct OverviewView: View {
             }
             .buttonStyle(.borderedProminent)
             Button {
-                model.scan(NSHomeDirectory())
+                model.scan(UserHome.path)
             } label: {
                 Label("Scan Home Folder", systemImage: "house")
             }
@@ -61,6 +76,7 @@ struct OverviewView: View {
         }
         .controlSize(.large)
         .disabled(model.scanning)
+        #endif
     }
 
     @ViewBuilder private func summary(_ result: ScanResult) -> some View {

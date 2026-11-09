@@ -1,3 +1,4 @@
+import CleanerKit
 import Foundation
 
 extension Int64 {
@@ -8,7 +9,7 @@ extension Int64 {
 extension String {
     /// Path with the home folder shortened to `~`.
     var tilde: String {
-        let home = NSHomeDirectory()
+        let home = UserHome.path
         return self == home ? "~" : hasPrefix(home + "/") ? "~" + dropFirst(home.count) : self
     }
 }

@@ -9,7 +9,7 @@ public struct SafetyGuard: Sendable {
 
     public let home: String
 
-    public init(home: String = NSHomeDirectory()) {
+    public init(home: String = UserHome.path) {
         self.home = home
     }
 

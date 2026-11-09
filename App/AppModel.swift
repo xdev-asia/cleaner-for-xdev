@@ -71,7 +71,14 @@ struct ItemResult: Identifiable {
 final class AppModel {
     var section: SidebarSection = .overview
     var volumes: [VolumeInfo] = []
+    #if APP_STORE
+    /// The sandboxed edition only sees folders the user picks, so Full Disk Access does not apply.
+    var hasFullDiskAccess = true
+    static let rules = Rules.sandboxed
+    #else
     var hasFullDiskAccess = AppModel.checkFullDiskAccess()
+    static let rules = Rules.standard
+    #endif
 
     // Scan
     var scanning = false
@@ -137,7 +144,9 @@ final class AppModel {
     }
 
     func recheckAccess() {
+        #if !APP_STORE
         hasFullDiskAccess = Self.checkFullDiskAccess()
+        #endif
         refreshVolumes()
     }
 
@@ -155,6 +164,7 @@ final class AppModel {
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
         panel.prompt = "Scan"
+        panel.directoryURL = URL(fileURLWithPath: UserHome.path)
         if panel.runModal() == .OK, let url = panel.url { scan(url.path) }
     }
 
@@ -203,7 +213,7 @@ final class AppModel {
 
     private func analyse(_ root: Node) async {
         analysing = true
-        let found = await RuleMatcher().findings(in: root)
+        let found = await RuleMatcher(rules: Self.rules).findings(in: root)
         findings = found
         selectedFindings = Set(found.filter { $0.rule.safety == .safe && $0.blockedReason == nil && !$0.toolMissing }.map(\.id))
         analysing = false

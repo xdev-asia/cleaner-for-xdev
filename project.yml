@@ -7,6 +7,18 @@ options:
 packages:
   CleanerKit:
     path: .
+settingGroups:
+  app:
+    PRODUCT_NAME: Cleaner for xDev
+    MARKETING_VERSION: "0.1.1"
+    CURRENT_PROJECT_VERSION: "2"
+    SWIFT_VERSION: "6.0"
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: Cleaner for xDev
+    INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+    INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 xDev. MIT License."
+    ENABLE_HARDENED_RUNTIME: YES
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 targets:
   Cleaner:
     type: application
@@ -16,17 +28,25 @@ targets:
       - package: CleanerKit
     scheme: {}
     settings:
+      groups: [app]
       base:
-        PRODUCT_NAME: Cleaner for xDev
         PRODUCT_BUNDLE_IDENTIFIER: asia.xdev.cleaner
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
-        SWIFT_VERSION: "6.0"
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Cleaner for xDev
-        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
-        INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 xDev. MIT License."
-        ENABLE_HARDENED_RUNTIME: YES
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+  # Mac App Store edition: sandboxed, scans only folders the user picks, never runs tools or empties the Trash.
+  CleanerAppStore:
+    type: application
+    platform: macOS
+    sources: [App]
+    dependencies:
+      - package: CleanerKit
+    scheme: {}
+    settings:
+      groups: [app]
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: asia.xdev.cleaner.appstore
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: APP_STORE
+        CODE_SIGN_ENTITLEMENTS: AppStore/AppStore.entitlements
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
