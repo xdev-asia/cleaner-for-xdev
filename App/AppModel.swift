@@ -3,11 +3,12 @@ import CleanerKit
 import SwiftUI
 
 enum SidebarSection: String, CaseIterable, Identifiable {
-    case overview, folders, cleanable, large, duplicates
+    case smartScan, overview, folders, cleanable, large, duplicates
     var id: Self { self }
 
     var title: String {
         switch self {
+        case .smartScan: "Smart Scan"
         case .overview: "Overview"
         case .folders: "Folders"
         case .cleanable: "Cleanable"
@@ -18,6 +19,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
 
     var symbol: String {
         switch self {
+        case .smartScan: "wand.and.sparkles"
         case .overview: "internaldrive"
         case .folders: "square.grid.3x3.square"
         case .cleanable: "sparkles"
@@ -69,7 +71,7 @@ struct ItemResult: Identifiable {
 
 @Observable @MainActor
 final class AppModel {
-    var section: SidebarSection = .overview
+    var section: SidebarSection = .smartScan
     var volumes: [VolumeInfo] = []
     #if APP_STORE
     /// The sandboxed edition only sees folders the user picks, so Full Disk Access does not apply.
@@ -113,6 +115,13 @@ final class AppModel {
     var results: [ItemResult] = []
     /// Paths removed since the last scan; hidden from every list.
     var removedPaths: Set<String> = []
+    /// Bytes moved to the Trash since the last scan.
+    var freedBytes: Int64 = 0
+
+    #if APP_STORE
+    /// The folder Smart Scan reads, once the user has picked it.
+    var smartScanFolder: String? = SmartScanFolder.rememberedPath
+    #endif
 
     init() {
         refreshVolumes()
@@ -172,6 +181,26 @@ final class AppModel {
         if panel.runModal() == .OK, let url = panel.url { scan(url.path) }
     }
 
+    /// Scans the Home folder. The sandboxed edition asks for the folder once and remembers it.
+    func smartScan() {
+        section = .smartScan
+        #if APP_STORE
+        guard let url = SmartScanFolder.resolve() ?? SmartScanFolder.choose() else { return }
+        smartScanFolder = url.path
+        scan(url.path)
+        #else
+        scan(AppHome.path)
+        #endif
+    }
+
+    #if APP_STORE
+    func changeSmartScanFolder() {
+        guard let url = SmartScanFolder.choose() else { return }
+        smartScanFolder = url.path
+        scan(url.path)
+    }
+    #endif
+
     func scan(_ path: String) {
         scanTask?.cancel()
         duplicateTask?.cancel()
@@ -185,6 +214,7 @@ final class AppModel {
         selectedDuplicates = []
         duplicatesSearched = false
         removedPaths = []
+        freedBytes = 0
         focusPath = nil
         summariser.cancel()
         summariser.request = nil
@@ -221,7 +251,7 @@ final class AppModel {
         analysing = true
         let found = await RuleMatcher(rules: Self.rules, home: AppHome.path).findings(in: root)
         findings = found
-        selectedFindings = Set(found.filter { $0.rule.safety == .safe && $0.blockedReason == nil && !$0.toolMissing }.map(\.id))
+        selectedFindings = SmartScanSummary(findings: found).defaultSelection
         analysing = false
     }
 
@@ -301,6 +331,7 @@ final class AppModel {
                 collected.append(ItemResult(id: item.id, title: item.title, succeeded: ok,
                                             message: stepResults.map(\.message).joined(separator: "\n")))
                 if ok {
+                    freedBytes += item.size
                     findings.removeAll { $0.id == item.id }
                     selectedFindings.remove(item.id)
                     selectedDuplicates.remove(item.path)

@@ -122,3 +122,21 @@ App không thu thập dữ liệu và không kết nối mạng.
   - AI chỉ chép lại mức an toàn, không tự đánh giá.
   - Khi thử, model tự đánh giá thì sai, ví dụ bảo DerivedData là "không an toàn".
 - Máy không có Apple Intelligence: app vẫn chạy đủ tính năng, chỉ hiện lý do AI không dùng được.
+
+### Smart Scan (quét nhanh và dọn)
+- Mục **Smart Scan** đứng đầu thanh bên và là mục mở mặc định.
+- Một nút quét cả thư mục Home. Kết quả gồm các cache cố định và các thư mục build trong dự án (node_modules, build Gradle...).
+- Bản DMG quét Home ngay.
+- Bản Store hỏi quyền một lần:
+  - Lần đầu, hộp chọn thư mục mở sẵn ở Home.
+  - App lưu security-scoped bookmark (entitlement `files.bookmarks.app-scope`).
+  - Các lần sau bấm một nút là quét. Nút "Change Folder…" để chọn lại.
+  - Bookmark hỏng hoặc hết hạn thì app hỏi lại.
+- Kết quả chia hai nhóm:
+  - **Safe**: chọn sẵn.
+  - **Review**: hiện ra nhưng không chọn sẵn.
+  - Mục bị chặn hoặc thiếu công cụ không hiện trong Smart Scan; vẫn xem ở Cleanable.
+- Nút "Clean <dung lượng>" luôn đi qua hộp xác nhận. Mọi thứ chuyển vào Thùng rác.
+- Sau khi dọn, app hiện số dung lượng đã giải phóng và nút "Scan Again".
+- AI không tự chạy; nút "Summarise This Scan" vẫn giữ.
+- Phần tính toán (nhóm, tổng, lựa chọn mặc định, tổng đã dọn) nằm trong `SmartScanSummary` của CleanerKit và có test.

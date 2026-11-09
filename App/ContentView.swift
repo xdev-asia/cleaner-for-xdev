@@ -15,7 +15,7 @@ struct ContentView: View {
         } detail: {
             VStack(spacing: 0) {
                 if !model.hasFullDiskAccess { AccessBanner() }
-                if model.scanning { ScanProgressBar() }
+                if model.scanning, model.section != .smartScan { ScanProgressBar() }
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -45,6 +45,7 @@ struct ContentView: View {
 
     @ViewBuilder private var detail: some View {
         switch model.section {
+        case .smartScan: SmartScanView()
         case .overview: OverviewView()
         case .folders: NeedsScan { FoldersView() }
         case .cleanable: NeedsScan { CleanableView() }

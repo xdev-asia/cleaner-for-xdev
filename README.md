@@ -3,6 +3,9 @@
 A native macOS app that shows where your disk space goes and cleans it up safely, with developer machines in mind
 (Xcode, Android, Docker, Node.js, Rust, Git worktrees).
 
+- **Smart Scan:** one button scans your Home folder for caches and build outputs (Xcode, Gradle, node_modules, app
+  caches), selects the *Safe* items, and cleans after you confirm. The App Store edition asks for the Home folder once
+  and remembers it.
 - **Overview:** used and free space per volume, the largest items, scan a disk, your Home folder or any folder.
 - **Folders:** a treemap you can click to drill into, next to a table sorted by size.
 - **Cleanable:** caches and build outputs grouped by tool, each marked *Safe* or *Review*. *Review* items are never
