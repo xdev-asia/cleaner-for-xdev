@@ -83,7 +83,7 @@ struct AccessBanner: View {
                 Text("Full Disk Access is off").bold()
                 Text("Some folders (Mail, Safari, Trash…) cannot be read. Turn on Cleaner for xDev in System Settings › Privacy & Security › Full Disk Access, then scan again.")
                     .font(.callout).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(3)
             }
             Spacer()
             Button("Open Settings") { model.openFullDiskAccessSettings() }

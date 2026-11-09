@@ -26,7 +26,13 @@ enum Snapshot {
                 try? rep.representation(using: .png, properties: [:])?
                     .write(to: URL(fileURLWithPath: directory + "/\(section.rawValue).png"))
             }
-            var report = "scanned \(model.result?.root.size ?? 0) files \(model.result?.root.fileCount ?? 0) denied \(model.result?.denied.count ?? 0)\n"
+            // Every view must fit the window; a view taller than the window gets centred and looks blank.
+            var report = ""
+            if let content = NSApp.windows.first(where: \.isVisible)?.contentView {
+                let tallest = content.subviews.map(\.frame.height).max() ?? 0
+                report += tallest > content.bounds.height + 1 ? "layout overflow \(tallest) > \(content.bounds.height)\n" : "layout ok\n"
+            }
+            report += "scanned \(model.result?.root.size ?? 0) files \(model.result?.root.fileCount ?? 0) denied \(model.result?.denied.count ?? 0)\n"
             for f in model.findings {
                 report += "finding \(f.rule.id) \(f.path.tilde) \(f.size) selected=\(model.selectedFindings.contains(f.id)) toolMissing=\(f.toolMissing) \(f.steps)\n"
             }
