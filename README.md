@@ -59,7 +59,8 @@ Sources/CleanerKit   engine without UI: scanner, rules, large files, duplicates,
 Tests                Swift Testing suites for the engine
 App                  SwiftUI app
 project.yml          XcodeGen project (the .xcodeproj is generated, not committed)
-scripts              build, DMG, release and icon scripts
+scripts              build, DMG, release, App Store and icon scripts
+docs                 support and privacy pages (GitHub Pages), design docs
 ```
 
 ## License
