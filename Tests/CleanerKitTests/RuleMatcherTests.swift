@@ -104,6 +104,15 @@ private func file(_ path: String, size: Int64) -> Node {
         #expect(docker?.steps == [.run(tool: "docker", arguments: ["builder", "prune", "-af"])])
     }
 
+    @Test func emptyDockerBuildCacheIsNotAFinding() async {
+        let runner = FakeRunner()
+        runner.answers["docker system df --format {{json .}}"] = CommandOutput(status: 0, output: """
+        {"Active":"0","Reclaimable":"0B","Size":"0B","TotalCount":"0","Type":"Build Cache"}
+        """)
+        let findings = await matcher(runner).findings(in: tree)
+        #expect(!findings.contains { $0.rule.id == "docker.buildCache" })
+    }
+
     @Test func parsesDockerSizes() {
         #expect(DockerProbe.bytes("1.5kB") == 1_500)
         #expect(DockerProbe.bytes("0B") == 0)

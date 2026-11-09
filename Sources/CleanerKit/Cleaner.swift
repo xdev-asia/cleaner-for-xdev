@@ -49,12 +49,12 @@ public struct Cleaner: Sendable {
         switch step {
         case .trash(let path):
             if let refusal = refusal(path) { return done(false, refusal) }
-            do { try trasher.trash(path); return done(true, "Đã chuyển vào Thùng rác") } catch {
+            do { try trasher.trash(path); return done(true, "Moved to Trash") } catch {
                 return done(false, error.localizedDescription)
             }
         case .trashContents(let path):
             guard let items = try? FileManager.default.contentsOfDirectory(atPath: path) else {
-                return done(false, "Không đọc được thư mục")
+                return done(false, "Could not read the folder")
             }
             var failures: [String] = []
             for item in items {
@@ -62,21 +62,21 @@ public struct Cleaner: Sendable {
                 if let refusal = refusal(full) { failures.append("\(item): \(refusal)"); continue }
                 do { try trasher.trash(full) } catch { failures.append("\(item): \(error.localizedDescription)") }
             }
-            return failures.isEmpty ? done(true, "Đã chuyển \(items.count) mục vào Thùng rác")
+            return failures.isEmpty ? done(true, "Moved \(items.count) items to Trash")
                 : done(false, failures.prefix(5).joined(separator: "\n"))
         case .emptyTrash(let path):
             guard URL(fileURLWithPath: path).standardizedFileURL.path == home + "/.Trash" else {
-                return done(false, "Chỉ xoá vĩnh viễn được trong ~/.Trash")
+                return done(false, "Permanent deletion is only allowed in ~/.Trash")
             }
             let items = (try? FileManager.default.contentsOfDirectory(atPath: path)) ?? []
             var failures: [String] = []
             for item in items {
                 do { try FileManager.default.removeItem(atPath: path + "/" + item) } catch { failures.append(item) }
             }
-            return failures.isEmpty ? done(true, "Đã xoá vĩnh viễn \(items.count) mục")
-                : done(false, "Không xoá được: " + failures.prefix(5).joined(separator: ", "))
+            return failures.isEmpty ? done(true, "Permanently deleted \(items.count) items")
+                : done(false, "Could not delete: " + failures.prefix(5).joined(separator: ", "))
         case .run(let tool, let arguments):
-            guard let executable = tools.locate(tool) else { return done(false, "Không tìm thấy \(tool)") }
+            guard let executable = tools.locate(tool) else { return done(false, "\(tool) not found") }
             do {
                 let out = try await runner.run(executable, arguments, environment: tools.environment)
                 return done(out.status == 0, out.output.trimmingCharacters(in: .whitespacesAndNewlines))

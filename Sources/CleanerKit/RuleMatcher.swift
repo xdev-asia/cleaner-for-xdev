@@ -42,7 +42,7 @@ public struct RuleMatcher: Sendable {
         for (rule, node) in raw {
             if let finding = await finding(rule, node) { findings.append(finding) }
         }
-        if let rule = rules.first(where: { $0.match == .docker }), let docker = await DockerProbe(runner: runner, tools: tools).buildCache() {
+        if let rule = rules.first(where: { $0.match == .docker }), let docker = await DockerProbe(runner: runner, tools: tools).buildCache(), docker > 0 {
             findings.append(make(rule, path: "", size: docker))
         }
         return Self.removingNested(findings)
@@ -75,9 +75,9 @@ public struct RuleMatcher: Sendable {
             let status = try? await runner.run(git, ["-C", node.path, "status", "--porcelain", "--ignore-submodules=none"],
                                                environment: tools.environment)
             if status?.status != 0 {
-                blocked = "Không đọc được trạng thái git"
+                blocked = "Could not read git status"
             } else if let output = status?.output, !output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                blocked = "Còn thay đổi chưa commit"
+                blocked = "Has uncommitted changes"
             }
         }
         let step = CleanupStep.run(tool: "git", arguments: ["-C", main, "worktree", "remove", "--force", node.path])

@@ -2,13 +2,13 @@ import CryptoKit
 import Foundation
 
 public enum FileKind: String, Sendable, CaseIterable, Hashable {
-    case video = "Video"
-    case image = "Ảnh"
-    case audio = "Âm thanh"
-    case archive = "File nén"
-    case installer = "Bộ cài"
-    case disk = "Ổ đĩa ảo"
-    case other = "Khác"
+    case video = "Videos"
+    case image = "Images"
+    case audio = "Audio"
+    case archive = "Archives"
+    case installer = "Installers"
+    case disk = "Disk images"
+    case other = "Other"
 
     static let extensions: [FileKind: Set<String>] = [
         .video: ["mov", "mp4", "m4v", "mkv", "avi", "webm"],

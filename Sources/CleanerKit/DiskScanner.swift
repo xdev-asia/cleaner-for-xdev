@@ -25,6 +25,7 @@ public struct ScanProgress: Sendable, Equatable {
     public var filesSeen = 0
     public var bytesSeen: Int64 = 0
     public var currentPath = ""
+    public init() {}
 }
 
 public struct ScanResult: Sendable {

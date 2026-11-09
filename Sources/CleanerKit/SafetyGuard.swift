@@ -27,14 +27,14 @@ public struct SafetyGuard: Sendable {
     }
 
     public func check(_ path: String) -> Verdict {
-        guard path.hasPrefix("/") else { return .refused("Đường dẫn không tuyệt đối") }
+        guard path.hasPrefix("/") else { return .refused("Path is not absolute") }
         let normalized = URL(fileURLWithPath: path).standardizedFileURL.path
         for tree in forbiddenTrees where normalized == tree || normalized.hasPrefix(tree + "/") {
-            return .refused("Nằm trong vùng được bảo vệ: \(tree)")
+            return .refused("Inside a protected area: \(tree)")
         }
         for root in protectedRoots {
             if normalized == root || normalized == "/" || root.hasPrefix(normalized + "/") {
-                return .refused("Thư mục được bảo vệ: \(root)")
+                return .refused("Protected folder: \(root)")
             }
         }
         return .allowed
