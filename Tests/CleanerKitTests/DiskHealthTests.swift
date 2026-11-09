@@ -103,7 +103,7 @@ import Testing
         #expect(brief.contains("rating Watch"))
         #expect(brief.contains("85% of rated write endurance used"))
         #expect(brief.contains("temperature 35 °C"))
-        #expect(brief.contains("6763 power-on hours"))
+        #expect(brief.contains("powered on for 6763 hours"))
         #expect(brief.contains("Reasons for the rating: 85% of the rated write endurance is used."))
         #expect(AIBrief.healthInstructions.contains("never change it"))
     }

@@ -8,6 +8,7 @@ extension AIBrief {
     - Use only the figures given and general knowledge of SSDs and hard drives.
     - Each disk comes with a rating decided by the app: Good, Watch, Replace or Unknown. Copy it exactly as given; \
     never change it or rate a disk yourself.
+    - Do not compare a figure with a threshold, limit or normal range unless one is given with it. Never invent one.
     - Rated write endurance is an estimate from the drive maker; drives often keep working past 100%.
     - Never suggest Terminal commands or third-party repair tools. Always recommend keeping a backup, such as Time Machine.
     """
@@ -26,7 +27,9 @@ extension AIBrief {
                 facts.append("spare \(n.availableSpare)% (threshold \(n.availableSpareThreshold)%)")
                 if let t = n.temperatureCelsius { facts.append("temperature \(t) °C") }
                 facts.append("\(bytes(n.bytesWritten)) written, \(bytes(n.bytesRead)) read")
-                facts.append("\(n.powerOnHours) power-on hours, \(n.powerCycles) power cycles, \(n.unsafeShutdowns) unsafe shutdowns")
+                facts.append("powered on for \(n.powerOnHours) hours in total")
+                facts.append("turned on \(n.powerCycles) times")
+                facts.append("lost power without a normal shut down \(n.unsafeShutdowns) times (common on laptops; not a fault by itself)")
                 facts.append("\(n.mediaErrors) media errors")
             }
             facts.append("\(disk.errorsSinceBoot) read/write errors since startup")
