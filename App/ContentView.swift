@@ -24,6 +24,9 @@ struct ContentView: View {
         .sheet(item: $model.pending) { pending in
             ConfirmSheet(pending: pending)
         }
+        .sheet(item: Binding(get: { model.explainer.request }, set: { model.explainer.request = $0 })) { request in
+            ExplainSheet(request: request)
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             model.recheckAccess()
         }

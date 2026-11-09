@@ -64,7 +64,7 @@ struct OverviewView: View {
             }
             .buttonStyle(.borderedProminent)
             Button {
-                model.scan(UserHome.path)
+                model.scan(AppHome.path)
             } label: {
                 Label("Scan Home Folder", systemImage: "house")
             }
@@ -91,6 +91,7 @@ struct OverviewView: View {
             if !model.findings.isEmpty {
                 Button("View Cleanable Items") { model.section = .cleanable }
             }
+            if !model.analysing { AISummaryCard() }
             Text("Largest Items").font(.headline)
             let top = result.root.children.filter { $0.kind != .smallFiles }.prefix(10)
             ForEach(Array(top)) { node in
@@ -107,7 +108,10 @@ struct OverviewView: View {
                         model.section = .folders
                     }
                 }
-                .contextMenu { Button("Show in Finder") { model.reveal(node.path) } }
+                .contextMenu {
+                    Button("Show in Finder") { model.reveal(node.path) }
+                    Button("Explain with Apple Intelligence") { model.explain(node) }
+                }
                 Divider()
             }
             if !result.denied.isEmpty {
@@ -128,6 +132,37 @@ struct OverviewView: View {
             Text(caption).font(.caption).foregroundStyle(.secondary).lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+/// Advice on the whole scan from Apple Intelligence, written on this Mac.
+struct AISummaryCard: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let assistant = model.summariser
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Apple Intelligence", systemImage: "sparkles").font(.headline)
+                Spacer()
+                if assistant.working {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button(assistant.request == nil ? "Summarise This Scan" : "Summarise Again") { model.summarise() }
+                }
+            }
+            if let error = assistant.error {
+                Text(error).foregroundStyle(.secondary)
+            } else if !assistant.text.isEmpty {
+                AssistantText(text: assistant.text)
+                AssistantNote()
+            } else if assistant.request == nil {
+                Text("Get a short, private summary of where the space goes and what to clean first. It runs on this Mac; nothing is sent anywhere.")
+                    .foregroundStyle(.secondary)
+            }
+        }
         .padding(14)
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
     }

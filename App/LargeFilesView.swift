@@ -76,6 +76,7 @@ struct LargeFilesView: View {
     @ViewBuilder private func menu(_ nodes: [Node]) -> some View {
         if !nodes.isEmpty {
             Button("Show in Finder") { nodes.forEach { model.reveal($0.path) } }
+            if nodes.count == 1 { Button("Explain with Apple Intelligence") { model.explain(nodes[0]) } }
             Divider()
             Button("Move to Trash…", role: .destructive) { model.confirmTrash(nodes) }
         }

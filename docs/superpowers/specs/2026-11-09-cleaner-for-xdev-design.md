@@ -100,3 +100,25 @@ App không thu thập dữ liệu và không kết nối mạng.
   - trash
   - chạy lệnh (bằng một công cụ giả)
 - UI: một XCUITest: quét một thư mục mẫu, mở Dọn được, xác nhận rồi kiểm tra Thùng rác.
+
+## Cập nhật 2026-11-09 (người dùng quyết định)
+
+### Bản Mac App Store
+- Quyết định "không qua Mac App Store" ở trên được đổi: thêm target `CleanerAppStore` (bundle
+  `asia.xdev.cleaner.appstore`, miễn phí), dùng chung mã nguồn, cờ biên dịch `APP_STORE`.
+- Bản Store chạy sandbox, chỉ có quyền `files.user-selected.read-write`:
+  - quét thư mục người dùng chọn;
+  - chỉ giữ các quy tắc chuyển vào Thùng rác (`Rules.sandboxed`);
+  - không chạy lệnh ngoài, không có Full Disk Access.
+- Bản DMG giữ đủ tính năng.
+
+### AI chạy trên máy (Apple Intelligence)
+- Dùng framework FoundationModels, model chạy trên máy, không gửi dữ liệu lên mạng.
+- Prompt chỉ chứa tên, đường dẫn, dung lượng, ngày sửa và quy tắc của app (`AIBrief`); không đọc nội dung file.
+- Hai chức năng:
+  - **Explain with Apple Intelligence**: giải thích một mục (ở Cleanable, Folders, Large Files, Overview).
+  - **Summarise This Scan**: tóm tắt cả lần quét (ở Overview).
+- Mức an toàn (Safe/Review) luôn do quy tắc của app quyết định:
+  - AI chỉ chép lại mức an toàn, không tự đánh giá.
+  - Khi thử, model tự đánh giá thì sai, ví dụ bảo DerivedData là "không an toàn".
+- Máy không có Apple Intelligence: app vẫn chạy đủ tính năng, chỉ hiện lý do AI không dùng được.

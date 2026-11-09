@@ -92,10 +92,18 @@ struct FindingRow: View {
             }
             Spacer()
             Text(finding.size.bytes).monospacedDigit().bold()
+            Button {
+                model.explain(finding)
+            } label: {
+                Image(systemName: "sparkles")
+            }
+            .buttonStyle(.borderless)
+            .help("Explain with Apple Intelligence")
         }
         .opacity(disabled ? 0.6 : 1)
         .contextMenu {
             if !finding.path.isEmpty { Button("Show in Finder") { model.reveal(finding.path) } }
+            Button("Explain with Apple Intelligence") { model.explain(finding) }
         }
     }
 }

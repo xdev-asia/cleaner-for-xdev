@@ -103,6 +103,10 @@ final class AppModel {
     // Folders
     var focusPath: String?
 
+    // Apple Intelligence
+    let explainer = Assistant()
+    let summariser = Assistant()
+
     // Cleanup
     var pending: PendingCleanup?
     var cleaning = false
@@ -164,7 +168,7 @@ final class AppModel {
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
         panel.prompt = "Scan"
-        panel.directoryURL = URL(fileURLWithPath: UserHome.path)
+        panel.directoryURL = URL(fileURLWithPath: AppHome.path)
         if panel.runModal() == .OK, let url = panel.url { scan(url.path) }
     }
 
@@ -182,6 +186,8 @@ final class AppModel {
         duplicatesSearched = false
         removedPaths = []
         focusPath = nil
+        summariser.cancel()
+        summariser.request = nil
         progress = ScanProgress()
         let scanner = DiskScanner()
         scanTask = Task {
@@ -213,7 +219,7 @@ final class AppModel {
 
     private func analyse(_ root: Node) async {
         analysing = true
-        let found = await RuleMatcher(rules: Self.rules).findings(in: root)
+        let found = await RuleMatcher(rules: Self.rules, home: AppHome.path).findings(in: root)
         findings = found
         selectedFindings = Set(found.filter { $0.rule.safety == .safe && $0.blockedReason == nil && !$0.toolMissing }.map(\.id))
         analysing = false
