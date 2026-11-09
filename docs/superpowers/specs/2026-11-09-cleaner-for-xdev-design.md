@@ -1,0 +1,102 @@
+# Cleaner for xDev: thiết kế
+
+Ngày: 2026-11-09. Trạng thái: **chờ duyệt**.
+
+## Mục tiêu
+
+App macOS native, mã nguồn mở, để phân tích dung lượng đĩa và dọn dẹp an toàn. Ưu tiên máy của lập trình viên
+(Xcode, Android, Docker, Node, Rust). Phát hành dạng **DMG** trên GitHub Releases, không qua Mac App Store
+(quyết định 2026-11-09), nên app không chạy sandbox và quét được cả ổ đĩa.
+
+Ngoài phạm vi: Mac App Store, Windows/Linux, iOS, gỡ cài đặt app, "tăng tốc máy", dọn RAM, chạy nền hoặc tự khởi động.
+
+## Nền tảng
+
+- Swift 6 (strict concurrency), SwiftUI, macOS 26 trở lên. Máy dev: Xcode 27.2, macOS 27.2.
+- Project Xcode sinh từ `project.yml` bằng **XcodeGen**; file `.xcodeproj` không commit.
+- Engine tách thành Swift package `CleanerKit` (không có UI), test bằng Swift Testing qua `swift test`.
+- Một target app `Cleaner`, không sandbox, Hardened Runtime bật (bắt buộc để notarize).
+
+## Engine (`CleanerKit`)
+
+1. **Scanner**
+   - Duyệt thư mục song song (task group, giới hạn số luồng).
+   - Tính dung lượng bằng `totalFileAllocatedSize`, tức dung lượng thật trên đĩa, để khớp với `df`.
+   - Mỗi cặp (device, inode) chỉ tính một lần, để hard link không bị đếm hai lần.
+   - Không đi theo symlink. Không vượt sang volume khác, trừ khi người dùng chọn quét volume đó.
+   - Bỏ qua `/System`, `/private/var/vm` và các volume hệ thống chỉ đọc.
+   - Báo tiến độ qua `AsyncStream`, huỷ được giữa chừng.
+   - Kết quả là cây `Node`: đường dẫn, dung lượng, số file, ngày sửa.
+2. **Rules (dọn được):** mỗi quy tắc gồm:
+   - mẫu đường dẫn
+   - nhóm (dev / hệ thống)
+   - mức an toàn (an toàn / cân nhắc)
+   - mô tả
+   - cách dọn: chuyển vào Thùng rác, hoặc lệnh của chính công cụ đó
+
+   Bộ quy tắc ban đầu:
+   - Xcode: DerivedData, Archives (mức cân nhắc), CoreSimulator
+     (lệnh `xcrun simctl delete unavailable`), iOS DeviceSupport
+   - Android: `~/.gradle/caches`, `~/.android/avd` (cân nhắc), `build/` của project Gradle
+   - Node: `~/.npm`, pnpm store (lệnh `pnpm store prune`), `node_modules` (cân nhắc)
+   - Rust: `target/` cạnh `Cargo.toml` (lệnh `cargo clean`)
+   - Docker build cache (lệnh `docker builder prune -af`)
+   - Git worktree không còn thay đổi, kể cả submodule (lệnh `git worktree remove`)
+   - Hệ thống: `~/Library/Caches`, `~/Library/Logs`, Thùng rác, file `.dmg`/`.pkg` trong Downloads
+3. **File lớn:** các file lớn hơn N MB, lọc theo loại và ngày sửa.
+4. **Trùng lặp:** gom theo kích thước, rồi hash 64 KB đầu file, rồi SHA-256 cả file (CryptoKit).
+   Clone trên APFS có thể bị báo là trùng; bản đầu ghi rõ giới hạn này trong UI.
+5. **Cleaner**
+   - Mặc định chỉ chuyển vào Thùng rác (`FileManager.trashItem`). Không xoá vĩnh viễn.
+   - Dọn bằng lệnh thì chạy `Process` với đường dẫn tuyệt đối của công cụ, hiện log, huỷ được.
+   - Từ chối mọi đường dẫn nằm trong danh sách cấm (`/System`, `/usr`, `/bin`, `/sbin`, `/Library`, thư mục gốc
+     của Home, `~/Library` ở cấp gốc).
+
+## Quyền truy cập
+
+- Có Full Disk Access thì quét được cả ổ đĩa.
+- Chưa có thì app vẫn quét được những gì macOS cho phép. App ghi rõ các thư mục bị từ chối, kèm nút mở
+  System Settings › Privacy & Security › Full Disk Access.
+
+## Màn hình
+
+Sidebar bên trái gồm 5 mục:
+1. **Tổng quan:** đã dùng / còn trống của từng volume, top 10 mục lớn nhất, nút Quét.
+2. **Thư mục:** treemap, bấm vào để đi sâu, kèm bảng xếp theo dung lượng; có Reveal in Finder.
+3. **Dọn được:** danh sách theo nhóm, mỗi mục có tick chọn, tổng dung lượng và nhãn mức an toàn.
+   Mục "cân nhắc" không được tick sẵn.
+4. **File lớn.**
+5. **Trùng lặp.**
+
+Mọi thao tác xoá đều qua một sheet xác nhận: danh sách mục, tổng dung lượng, "sẽ chuyển vào Thùng rác" hoặc lệnh sẽ chạy.
+App không thu thập dữ liệu và không kết nối mạng.
+
+## Mã nguồn và phát hành
+
+- **Repo GitHub công khai:** `xdev-asia/cleaner-for-xdev`, license **MIT**.
+  - Có README (ảnh chụp màn hình, cách cài, cách build), LICENSE và CI chạy `swift test` trên GitHub Actions.
+- **DMG:**
+  - Tạo bằng script `scripts/release.sh`: build Release, ký, đóng DMG, notarize, staple.
+  - Đưa lên GitHub Releases.
+- **Ký và notarize:**
+  - Cần chứng chỉ **Developer ID Application**. Máy chưa có chứng chỉ này (mới có Apple Distribution và
+    Apple Development); chỉ Account Holder của tài khoản Apple Developer tạo được.
+  - Quyết định 2026-11-09: tạo chứng chỉ Developer ID và notarize mọi bản phát hành.
+  - Trước khi có chứng chỉ, script vẫn tạo được DMG ký ad-hoc để thử nội bộ, nhưng không đưa lên Releases.
+- **Bí mật:**
+  - Không có bí mật nào trong repo.
+  - Thông tin notarize (`notarytool` keychain profile) chỉ nằm trên máy.
+
+## Kiểm thử
+
+- `CleanerKit`: Swift Testing trên thư mục tạm dựng sẵn. Bao gồm:
+  - dung lượng
+  - hard link
+  - symlink
+  - huỷ quét
+  - từng quy tắc
+  - danh sách cấm
+  - tìm trùng lặp
+  - trash
+  - chạy lệnh (bằng một công cụ giả)
+- UI: một XCUITest: quét một thư mục mẫu, mở Dọn được, xác nhận rồi kiểm tra Thùng rác.
